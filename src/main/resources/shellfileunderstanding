@@ -1,7 +1,144 @@
-
-
 #mongosh shell idea
 
-to switch to the databases
+# connect to the mongodb
+# make sure to have a mongodb server running
+& mongosh installed
+
+mongosh (default mongodb URL ) OR mongosh "mongodb://localhost:27017" (mongosh equivalent)
+OR mongosh --port 28015 (manual port other than default)
+
+
+# show the list of the databases
+show dbs
+
+## to switch to the databases create a new databases if does not exist
 use <database_name>
 
+## how to delete a db
+db.dropDatabase()
+
+## show collections within the selected DB
+show collections
+
+## to use any collections within a DB
+db.<collecction_name>
+
+## delete a collection within a DB
+db.<collection-name>.drop()
+
+
+## how to insert a document
+##inside {} should be a JSON format object
+## if no collection exists, automatically inserts one with the command
+
+db.<collections_name>.insertOne({})
+
+## insert many documents in an array of different objects
+db.<collections-name>.insertMany({}, {})
+
+
+## to find all document within a collection in db
+db.<collection-name>.find()
+
+
+## find with certain filters and multi filters are comma separated
+db.<collection-name>.find( { filter-key:"filter-value", filter-key: int-filter-value })
+
+## find with filters and retrieve only the data which you want by passing the second argument
+## can keep the first argument empty if you dont want to perform filtering
+db.<collection-name>.find( { filter-key:"filter-value", filter-key: int-filter-value },
+{key-of-the-data-you-want:1, key-of-the-data-you-want2:1} }
+
+## if you want the particular object associated with the id
+db.<collection-name>.findOne( {_id: entire-object-value-of-the-document})
+
+## chaining functions on document
+
+##gives the count of the resultant of the query
+count()
+
+##gives the value number of documents only
+limit(value)
+
+##sort by which field
+## note the sorting is done by the value of 1 and -1
+sort( {sort-by-ascending-order-key:1, sort-by-ascending-order-key:-1 } )
+
+## operators
+
+## $gt strictly greater than the value
+## $gte greater than or equal to the value
+db.<collection-name>.find({rating : {$gt:7}})
+
+## $lt strictly less than the value
+## $lte less than or equal to the value
+db.<collection-name>.find( {rating: {$lte:8}})
+
+## $ne is for not equals
+
+
+## $or for multiple hits, will be require to add in an array of operator objects
+## can be applied on the same filter key or different
+db.<collection-name>.find( {$or :[ {filter-key1 : {$gt : filter-value2}}, {filter-key2: "filter-value2"} ])
+
+
+## $in operator specially in ranges instead of doing or on multiple or for the same key
+db.<collection-name>.find({ filter-key1 : {$in : [values-as-comma-separated-values]}})
+
+## $nin operator does the reverse of $in
+
+## querying in arrays
+## normal querying with find will directly find the match as per the specified value if the value of
+## the key is not an array
+## but if it is an array, then the provided filter value will be checked for its presence in the
+## values mentioned in the array of that key
+db.<collection-name>.find( {array-filter-key : "value"} );
+
+
+## if you want the only type filtering for arrays, where you want to grab documents
+## whose value is strictly only the value mentioned in the filter
+## it should be mentioned in an array object
+## can add many values in the array
+db.<collection-name>.find( {array-filter-key : ["value"]})
+
+## want to filter where you find documents which match the array values you mentioned
+## but can have other values too
+
+db.<collection-name>.find( {array-filter-key : {$all : ["value1", "value2"]}})
+## NESTED DOCUMENTS finding ##
+##the value of the key could be an array or another document itself
+## want to find data in a nested document make sure the key this time is in double quotes
+db.<collection-name>.find({"parent-key-filter.child-key-filter": "value"})
+
+
+##delete one document
+db.<collection-name>.deleteOne( {_id : value-of-key-of-object})
+
+## delete many documents same as find filter
+db.<collection-name>.deleteMany( {delete-filter-key :"value"})
+
+##updating documents
+##updating by object id is better as the value is unique, can be done with filters as find
+## but if filter results are multiple, then the update will be carried out on multiple documents
+## first object for filtering, and second object will be using a $set operator to changes
+## values for multiple keys in the document, comma separated values
+## if key is not present, then new key will be added
+
+db.<collection-name>.updateOne( {_id : value-of-key-of-object}, {$set : {to-update-key1 :value
+, to-update-key2: value } } )
+
+$unset does the reverse of set, it removes the key itself from the document
+similarly with updateMany()
+
+## incrementing a value
+$inc operator by some value
+db.<collection-name>.updateOne( {_id : value-of-key-of-object}, {$inc : {to-update-key1 :value-to-increment-by} })
+
+#similarly for $dec
+
+$push and $pull perform addition and deletion of values within a  key
+db.<collection-name>.updateOne( {_id : value-of-key-of-object}, {$pull : {existing-key : "value-to-remove"}} )
+
+want to add multiple push and pull in single command
+
+db.<collection-name>.updateOne( {_id : value-of-key-of-object}, {$push : {existing-key : {$each : ["value1","value2"]} )
