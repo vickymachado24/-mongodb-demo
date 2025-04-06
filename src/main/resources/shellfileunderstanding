@@ -142,3 +142,77 @@ db.<collection-name>.updateOne( {_id : value-of-key-of-object}, {$pull : {existi
 want to add multiple push and pull in single command
 
 db.<collection-name>.updateOne( {_id : value-of-key-of-object}, {$push : {existing-key : {$each : ["value1","value2"]} )
+
+## other operators are
+$timestamp, $unset, $rename
+
+
+#### Mongodb Aggregation pipelines
+## Aggregation pipelines can have one or more "stages". The order of these stages are important. Each stage acts upon the results of the previous stage.
+
+## function aggregate() takes an array of aggregation rules/stages
+## each of the stage is a JSON object itself
+
+
+db.posts.aggregate([
+  // Stage 1: Only find documents that have more than 1 like
+  {
+    $match: { likes: { $gt: 1 } }
+  },
+  // Stage 2: Group documents by category and sum each categories likes
+  {
+    $group: { _id: "$category", totalLikes: { $sum: "$likes" } }
+  }
+])
+
+## group aggregation helps to group the documents
+## note that the _id here is different from the mongodb document id
+## here the grouping is performed revolving around the unique values of the columns you want to group by
+## note that the column name is preceded by the $ and enclosed in double quotes
+## this will help us get multiple results with unqique values
+db.<collection-name>.aggregate( { $group: { _id: "$column-name-for-grouping"}} )
+
+
+# $limit helps to limit the number of document passed to the next stage
+
+db.<collection-name>.aggregate( [{
+    $group: { _id: "$category", totalLikes: { $sum: "$likes" } },
+    {$limit : no-of-documents-to-pass}
+}])
+
+
+##$ project, passes only the fields to the next aggregation as mentioned, same as the second parameter for find
+## note that the key you want to pass is within double quotes, 1 for the fields you want, 0 for the fields you dont want
+db.<collection-name>.aggregate( [{
+    $group: { _id: "$category", totalLikes: { $sum: "$likes" } },
+    {$limit : no-of-documents-to-pass},
+    {$project : {"field-you-want-to-pass1":1,
+    "field-you-want-to-pass2":1}}
+}])
+
+
+# $sort same as sort() but the keys are within double quotes
+
+# $matches as the same as find(), here keys are not within double quotes
+
+## $addfields, adds news columns to the current aggregate stage
+
+db.<collection-name>.aggregate( [{$match : {key-filter-1: {$gte: value-filter}}}, {$addFields : {name-of-the-field-to-add : {$avf : "$column-for-calculation"}}}])
+
+## $count will give us the number of documents
+## where we can specify the name of the column which will represent the count
+
+
+##Aggregation $lookup
+##This aggregation stage performs a left outer join to a collection in the same database.
+
+##There are four required fields:
+
+##from: The collection to use for lookup in the same database
+##localField: The field in the primary collection that can be used as a unique identifier in the from collection.
+##foreignField: The field in the from collection that can be used as a unique identifier in the primary collection.
+##as: The name of the new field that will contain the matching documents from the from collection.
+
+db.<collection-name>.aggregate( [{$lookup : { from : "name-of-collection-in-same-db", localField :"current-db-column", foreignField : "name-of-the-column-in-outer-collection"
+  ,
+  as :"name-of-the-field-you-want-to-display"}}])
